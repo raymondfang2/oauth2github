@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @SpringBootApplication
 public class Oauth2Application extends WebSecurityConfigurerAdapter {
@@ -15,16 +16,20 @@ public class Oauth2Application extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// @formatter:off
-		http.authorizeRequests(a -> a
-						.antMatchers("/", "/error", "/webjars/**").permitAll()
-						.anyRequest().authenticated()
-				)
-				.csrf(c -> c
-						.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-				)
-				.oauth2Login();
-		// @formatter:on
+		http.authorizeRequests()
+
+				// allow anonymous access to the root page
+				.antMatchers("/").permitAll()
+
+				// all other requests
+				.anyRequest().authenticated()
+
+				// After we logout, redirect to root page,
+				// by default Spring will send you to /login?logout
+				.and().logout().logoutSuccessUrl("/")
+
+				// enable OAuth2/OIDC
+				.and().oauth2Login();
 	}
 
 }
