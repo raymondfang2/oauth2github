@@ -2,8 +2,10 @@ package com.example.oauth2;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -26,10 +28,17 @@ public class Oauth2Application extends WebSecurityConfigurerAdapter {
 
 				// After we logout, redirect to root page,
 				// by default Spring will send you to /login?logout
-				.and().logout().logoutSuccessUrl("/")
+				.and().logout().logoutSuccessHandler(logoutSuccessHandler()).logoutSuccessUrl("/")
 
 				// enable OAuth2/OIDC
-				.and().oauth2Login();
+				.and().oauth2Login()
+				.and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+	}
+
+
+	@Bean
+	public LogoutSuccessHandler logoutSuccessHandler() {
+		return new CustomLogoutSuccessHandler();
 	}
 
 }
